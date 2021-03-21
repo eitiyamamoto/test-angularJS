@@ -16,7 +16,7 @@ namespace InterviewTestPagination.Controllers {
         private readonly IModelService<Todo> _todoService = new TodoService();
 
         [HttpGet]
-        public IEnumerable<Todo> Todos(/* parameters  */) {
+        public IEnumerable<Todo> Todos() {
             return _todoService.Repository.All();
         }
 
