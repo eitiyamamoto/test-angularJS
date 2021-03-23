@@ -103,10 +103,12 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="App_Start\WebApiConfig.cs" />
+    <Compile Include="Business\ToDoResponseBO.cs" />
     <Compile Include="Controllers\TodoController.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
+    <Compile Include="Models\ToDoResponse.cs" />
     <Compile Include="Models\IModelRepository.cs" />
     <Compile Include="Models\IModelService.cs" />
     <Compile Include="Models\Todo\Todo.cs" />

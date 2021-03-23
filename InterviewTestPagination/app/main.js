@@ -21,110 +21,167 @@
         };
 
         function controller($scope, $http) { // example controller creating the scope bindings
+            var URL = "api/Todo/Todos";
+            var ID = 'id';
+            var TASK = 'task';
+            var CREATED_DATE = 'createdDate';
+            var ALL = 'all';
             $scope.todos = [];
-            $scope.selected = [];
-            $scope.orderId = 0;
-            $scope.orderTask = 0;
-            $scope.orderCreatedDate = 1;
-            // example of xhr call to the server's 'RESTful' api
-            $http.get("api/Todo/Todos").then(response => $scope.todos = response.data);
+            $scope.totalPage = 0;
+            $scope.currentPage = 1;
+            $scope.orderItem = CREATED_DATE;
+            $scope.order = 1;
+            $scope.pageSize = 20;
+            $scope.totalSize = 0;
             
             /**
-             * Watcher to check if total is loaded
+             * Function that get todo list from server
             **/
-            var totalWatcher = $scope.$watchCollection('total', () => {
-                $scope.orderByCreatedDate();
-                totalWatcher();
+            var getTodo = function () {
+                if ($scope.currentPage === undefined) {
+                    $scope.currentPage = 1;
+                }
+                var pageSizeParam;
+                if ($scope.pageSize == ALL) {
+                    pageSizeParam = -1;
+                } else {
+                    pageSizeParam = $scope.pageSize;
+                }
+                var data = {
+                    pageSize: pageSizeParam,
+                    currentPage: $scope.currentPage,
+                    orderItem: $scope.orderItem,
+                    order: $scope.order
+                };
+                var config = {
+                    params: data
+                };
+                $http.get(URL, config).then(response => successTodo(response));
+            };
+
+            /**
+             * Function that process response when it is successful
+             * 
+             * @param response - response from server
+            **/
+            var successTodo = function (response) {
+                var responseData = response.data;
+                $scope.todos = responseData.todoEnumerable;
+                $scope.currentPage = responseData.currentPage;
+                $scope.order = responseData.order;
+                $scope.orderItem = responseData.orderItem;
+                $scope.totalPage = responseData.totalPage;
+                $scope.totalSize = responseData.totalSize;
+            };
+
+            getTodo();
+
+            /**
+             * Watcher to get changes in current page fromm pagination
+            **/
+            $scope.$watch("currentPage", function ($scope) {
+                getTodo();
             });
 
             /**
-             * Function to order list by id
+             * Watcher to get changes in page size fromm pagination
+            **/
+            $scope.$watch("pageSize", function ($scope) {
+                getTodo();
+            });
+
+            /**
+             * Get the text for order
+            **/
+            var getOrderText = function () {
+                if ($scope.order == -1) {
+                    return "(desc)";
+                } else {
+                    return "(asc)";
+                }
+            };
+
+            /**
+             * Change the order side
+            **/
+            var changeOrder = function () {
+                $scope.order = -1 * $scope.order;
+                getTodo();
+            }
+
+            /**
+             * Reset order and current page when order item changes
+            **/
+            var resetOrderAndGet = function () {
+                $scope.order = 1;
+                $scope.currentPage = 1;
+                getTodo();
+            };
+
+            /**
+             * Function to call order by Id
             **/
             $scope.orderById = function () {
-                if ($scope.todos && $scope.todos instanceof Array) {
-                    if ($scope.orderId != 1) {
-                        $scope.todos = $scope.todos.sort((a, b) => (a.id > b.id) ? 1 : -1);
-                        $scope.orderId = 1;
-                    } else {
-                        $scope.todos = $scope.todos.sort((a, b) => (a.id < b.id) ? 1 : -1);
-                        $scope.orderId = -1;
-                    }
-                    $scope.orderTask = 0;
-                    $scope.orderCreatedDate = 0;
+                if ($scope.orderItem === ID) {
+                    changeOrder();
+                } else {
+                    $scope.orderItem = ID;
+                    resetOrderAndGet();
                 }
             }
 
             /**
-             * Function to show if it is ordered by id
+             * Function to indicate if it is ordered by id
             **/
             $scope.orderIdIndicator = function () {
-                if ($scope.orderId == -1) {
-                    return "(desc)";
-                } else if ($scope.orderId == 1) {
-                    return "(asc)";
-                } else {
-                    return "";
+                if ($scope.orderItem === ID) {
+                    return getOrderText();
                 }
+                return "";
             };
 
             /**
-             * Function to order by Task
+             * Function to call order by task
             **/
             $scope.orderByTask = function () {
-                if ($scope.todos && $scope.todos instanceof Array) {
-                    if ($scope.orderTask != 1) {
-                        $scope.todos = $scope.todos.sort((a, b) => (a.task > b.task) ? 1 : -1);
-                        $scope.orderTask = 1;
-                    } else {
-                        $scope.todos = $scope.todos.sort((a, b) => (a.task < b.task) ? 1 : -1);
-                        $scope.orderTask = -1;
-                    }
-                    $scope.orderId = 0;
-                    $scope.orderCreatedDate = 0;
+                if ($scope.orderItem === TASK) {
+                    changeOrder();
+                } else {
+                    $scope.orderItem = TASK;
+                    resetOrderAndGet();
                 }
             };
 
             /**
-             * Function that shows if it is ordered by task
+             * Function to indicate if it is ordered by task
             **/
             $scope.orderTaskIndicator = function () {
-                if ($scope.orderTask == -1) {
-                    return "(desc)";
-                } else if ($scope.orderTask == 1) {
-                    return "(asc)";
-                } else {
-                    return "";
+                if ($scope.orderItem === TASK) {
+                    return getOrderText();
                 }
+                return "";
             };
 
             /**
-             * Function that order by created date
+             * Function to call order by created date
             **/
             $scope.orderByCreatedDate = function () {
-                if ($scope.todos && $scope.todos instanceof Array) {
-                    if ($scope.orderCreatedDate != 1) {
-                        $scope.todos = $scope.todos.sort((a, b) => (a.createdDate > b.createdDate) ? 1 : -1);
-                        $scope.orderCreatedDate = 1;
-                    } else {
-                        $scope.todos = $scope.todos.sort((a, b) => (a.createdDate < b.createdDate) ? 1 : -1);
-                        $scope.orderCreatedDate = -1;
-                    }
-                    $scope.orderId = 0;
-                    $scope.orderTask = 0;
+                if ($scope.orderItem === CREATED_DATE) {
+                    changeOrder();
+                } else {
+                    $scope.orderItem = CREATED_DATE;
+                    resetOrderAndGet();
                 }
             };
 
             /**
-             * Function that shows if it is ordered by created date
+             * Function to indicate if it is ordered by created date
             **/
             $scope.orderCreatedDateIndicator = function () {
-                if ($scope.orderCreatedDate == -1) {
-                    return "(desc)";
-                } else if ($scope.orderCreatedDate == 1) {
-                    return "(asc)";
-                } else {
-                    return "";
+                if ($scope.orderItem === CREATED_DATE) {
+                    return getOrderText();
                 }
+                return "";
             };
         }
 
@@ -135,7 +192,10 @@
 
     /**
      * Directive definition function of 'pagination' directive.
-     * 
+     * Scope:
+     *      total-page: int - total pages
+     *      current-page: int - current page
+     *      page-size: int - selected page size
      * @returns {} directive definition object
      */
     function pagination() {
@@ -143,9 +203,10 @@
             restrict: "E", // example setup as an element only
             templateUrl: "app/templates/pagination.html",
             scope: {
-                total: '=',
-                selected: '=',
-            }, // example empty isolate scope
+                totalPage: '=',
+                currentPage: '=',
+                pageSize: '='
+            },
             controller: ["$scope", controller],
             link: link
         };
@@ -153,37 +214,12 @@
         function controller($scope) {
             var ALL = 'all';
             $scope.pageSizeOptions = [10, 20, 30, 'all'];
-            $scope.pageSize = 20;
-            $scope.totalLength = 0;
-            $scope.totalPage = 0;
-            $scope.currentPage = 1;
-
-            // Watcher to check if total is updated
-            $scope.$watchCollection('total', () => {
-                $scope.currentPage = 1;
-                updateSelectedPage($scope.pageSize, $scope.currentPage);
-            });
-
-            /**
-             * Update selected page when page size is updated
-            **/
-            $scope.updatePageSize = function () {
-                updateSelectedPage($scope.pageSize, $scope.currentPage);
-            }
-
-            /**
-             * Update current page
-            **/
-            $scope.updateCurrentPage = function () {
-                updateSelectedPage($scope.pageSize, $scope.currentPage);
-            }
 
             /**
              * Go to the first page
             **/
             $scope.goToFirst = function () {
                 $scope.currentPage = 1;
-                updateSelectedPage($scope.pageSize, $scope.currentPage);
             }
 
             /**
@@ -192,7 +228,6 @@
             $scope.goToPrevious = function () {
                 if ($scope.currentPage > 1) {
                     $scope.currentPage -= 1;
-                    updateSelectedPage($scope.pageSize, $scope.currentPage);
                 }
             }
 
@@ -202,7 +237,6 @@
             $scope.goToNext = function () {
                 if ($scope.currentPage < $scope.totalPage) {
                     $scope.currentPage += 1;
-                    updateSelectedPage($scope.pageSize, $scope.currentPage);
                 }
             }
 
@@ -211,39 +245,6 @@
             **/
             $scope.goToLast = function () {
                 $scope.currentPage = $scope.totalPage;
-                updateSelectedPage($scope.pageSize, $scope.currentPage);
-            }
-
-            /**
-            *  Update selected page that will be shown in the table
-            **/
-            var updateSelectedPage = function (pageSize, currentPage) {
-                // Check if total list is not empty and if it is array
-                if ($scope.total && $scope.total instanceof Array) {
-                    // Get total list size
-                    $scope.totalLength = $scope.total.length;
-
-                    // Update for page size
-                    if (pageSize === ALL) {
-                        $scope.selected = $scope.total;
-                        currentPage = 0;
-                        $scope.totalPage = 1;
-                    }
-                    else {
-                        $scope.totalPage = Math.ceil($scope.totalLength / pageSize);
-                        var init = 0;
-                        var end = 0;
-                        if (currentPage <= $scope.totalPage) {
-                            init = pageSize * (currentPage - 1);
-                            end = pageSize * currentPage;
-                        }
-                        $scope.selected = $scope.total.slice(init, end);
-                    }
-                    
-                } else {
-                    $scope.totalLength = 0;
-                    $scope.totalPage = 0;
-                }
             }
         }
 

@@ -35,7 +35,7 @@
     - Dont worry about styling (looking pretty, centralized, etc) it just has to show that the app is still active while the request is being made
 
     -->
-    <tr ng-repeat="todo in selected track by $index">
+    <tr ng-repeat="todo in todos track by $index">
         <td>{{todo.id}}</td>
         <td>{{todo.task}}</td>
         <td>{{todo.createdDate | date:'MM/dd/yyyy' }}</td>
@@ -46,4 +46,4 @@
 </div>
 
 <!-- pagination component -->
-<pagination ng-show="todos.length > 0" total="todos" selected="selected"></pagination>
+<pagination ng-show="todos.length > 0" total-page="totalPage" current-page="currentPage" page-size="pageSize"></pagination>
