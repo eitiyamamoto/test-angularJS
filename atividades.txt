@@ -1,0 +1,8 @@
+1h - Create pagination
+1h - Create ordernation header
+30m - Documentation and review
+
+Async
+2h 30m - Create back-end with pagination and order
+1h 20m - Change front-end to async pagination and test
+40m - Code review and git
